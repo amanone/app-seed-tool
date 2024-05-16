@@ -5,11 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.3] - 2024-05-12
+## [1.7.3] - 2024-05-18
 
 ### Fixed
 - Changed name of 'Generate BIP39' menus to 'Recover BIP39'
 - Changed Second Montgomery constant used for `cx_bn_gf2_n_mul()` to a more suitable value
+- Improve efficiency of `cx_bn_gf2_n_mul()` for Nano S
 
 ## [1.7.2] - 2024-05-06
 
