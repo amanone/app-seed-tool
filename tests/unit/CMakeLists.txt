@@ -6,7 +6,7 @@ endif()
 
 # project information
 project(unit_tests
-        VERSION 1.7.0
+        VERSION 1.7.3
 	      DESCRIPTION "Unit tests for app-seed-tool Ledger Application"
         LANGUAGES C)
 
@@ -98,7 +98,7 @@ find_package(cmocka QUIET)
 include(FetchContent)
 FetchContent_Declare(
     cmocka
-    GIT_REPOSITORY https://git.cryptomilk.org/projects/cmocka.git
+    GIT_REPOSITORY https://gitlab.com/cmocka/cmocka.git
     GIT_TAG        cmocka-1.1.7
     GIT_SHALLOW    1
 )
@@ -112,7 +112,7 @@ FetchContent_MakeAvailable(cmocka)
 add_compile_definitions(TEST DEBUG=0 SKIP_FOR_CMOCKA)
 add_compile_definitions(TARGET_NANOS HAVE_HASH HAVE_HMAC HAVE_SHA224 HAVE_SHA256 HAVE_SHA512 HAVE_PBKDF2 HAVE_ECC HAVE_CRC HAVE_RNG IO_HID_EP_LENGTH=64)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib $ENV{LEDGER_SECURE_SDK}/include $ENV{LEDGER_SECURE_SDK} $ENV{LEDGER_SECURE_SDK}/lib_cxng/src $ENV{LEDGER_SECURE_SDK}/lib_cxng/include $ENV{LEDGER_SECURE_SDK}/lib_ux/include $ENV{LEDGER_SECURE_SDK}/lib_bagl/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lib $ENV{LEDGER_SECURE_SDK}/include $ENV{LEDGER_SECURE_SDK}/lib_cxng/src $ENV{LEDGER_SECURE_SDK}/lib_cxng/include $ENV{LEDGER_SECURE_SDK}/lib_ux/include $ENV{LEDGER_SECURE_SDK}/lib_bagl/include)
 
 # add src
 install_apk_packages(linux-headers)

@@ -18,10 +18,10 @@
 // 2nd Montgomery constant: R2 = x^(2*t*8) mod N(x)
 // t = 1 since the number of bytes of R is 1.
 #define MONTGOMERY_CONSTANT_R2 \
-    { 0xA1 }
+    { 0x02 }
 
 // Minimal required bytes for BN storing a GF(256) value
-#define GF2_8_MPI_BYTES 1
+#define GF2_8_MPI_BYTES 16
 
 #if defined(TARGET_NANOS) && !defined API_LEVEL
 /**
@@ -51,82 +51,61 @@ cx_err_t cx_bn_gf2_n_mul(cx_bn_t bn_r,
                          const cx_bn_t bn_n,
                          const cx_bn_t bn_h __attribute__((unused))) {
     cx_err_t error = CX_OK;
-    cx_bn_t bn_x, bn_y, bn_temp;
-    int cmp_x, cmp_y;
-    uint32_t degree = 0;
+    uint32_t degree, nbits_a, nbits_b;
+
+    // Calculate the degree of the modulus polynomial
+    CX_CHECK(cx_bn_cnt_bits(bn_n, &degree));
+    degree--;
+
+    CX_CHECK(cx_bn_cnt_bits(bn_a, &nbits_a));
+    CX_CHECK(cx_bn_cnt_bits(bn_b, &nbits_b));
+
+    // Ensure both operands are in field
+    if (degree < 1 || nbits_a > degree || nbits_b > degree) {
+        error = CX_INVALID_PARAMETER;
+        goto end;
+    }
+
+    // Preliminaries
+    cx_bn_t bn_tempa, bn_tempb, bn_tempx;
+    uint32_t bit_indexb = 0;
     size_t nbytes;
     bool bit_set = 0;
 
-    // Preliminaries
     CX_CHECK(cx_bn_nbytes(bn_n, &nbytes));
-    CX_CHECK(cx_bn_alloc(&bn_x, nbytes));
-    CX_CHECK(cx_bn_alloc(&bn_y, nbytes));
-    CX_CHECK(cx_bn_alloc(&bn_temp, nbytes));
-    CX_CHECK(cx_bn_copy(bn_x, bn_a));
-    CX_CHECK(cx_bn_copy(bn_y, bn_b));
+    CX_CHECK(cx_bn_alloc(&bn_tempa, nbytes));
+    CX_CHECK(cx_bn_alloc(&bn_tempb, nbytes));
+    CX_CHECK(cx_bn_alloc(&bn_tempx, nbytes));
 
-    // Calculate the degree of the modulus polynomial
-    CX_CHECK(cx_bn_copy(bn_temp, bn_n));
-    do {
-        CX_CHECK(cx_bn_cmp_u32(bn_temp, (uint32_t) 0, &cmp_x));
-        CX_CHECK(cx_bn_shr(bn_temp, 1));
-    } while (cmp_x != 0 && ++degree);
-
-    // After loop degree is offset by 1
-    degree--;
-    if (degree < 1) {
-        error = CX_INVALID_PARAMETER;
-        goto end;
-    }
-
-    // Ensure both operands are in field
-    CX_CHECK(cx_bn_shr(bn_x, degree));
-    CX_CHECK(cx_bn_shr(bn_y, degree));
-    // Maybe change cx_bn_cmp_u32 to cx_bn_cnt_bits
-    CX_CHECK(cx_bn_cmp_u32(bn_x, (uint32_t) 0, &cmp_x));
-    CX_CHECK(cx_bn_cmp_u32(bn_y, (uint32_t) 0, &cmp_y));
-
-    if (cmp_x != 0 || cmp_y != 0) {
-        error = CX_INVALID_PARAMETER;
-        goto end;
-    }
-
-    // Check if both operands are non-zero
-    CX_CHECK(cx_bn_copy(bn_x, bn_a));
-    CX_CHECK(cx_bn_copy(bn_y, bn_b));
-    // Maybe cx_bn_cmp_u32 change to cx_bn_cnt_bits
-    CX_CHECK(cx_bn_cmp_u32(bn_x, (uint32_t) 0, &cmp_x));
-    CX_CHECK(cx_bn_cmp_u32(bn_y, (uint32_t) 0, &cmp_y));
-
+    CX_CHECK(cx_bn_copy(bn_tempa, bn_a));
+    CX_CHECK(cx_bn_copy(bn_tempb, bn_b));
     CX_CHECK(cx_bn_set_u32(bn_r, (uint32_t) 0));
 
     // Main loop for multiplication
-    while (cmp_x != 0 && cmp_y != 0) {
-        CX_CHECK(cx_bn_tst_bit(bn_y, 0, &bit_set));
-        if (bit_set) {
-            CX_CHECK(cx_bn_copy(bn_temp, bn_r));
-            CX_CHECK(cx_bn_xor(bn_r, bn_x, bn_temp));
+    if (nbits_a) {
+        while (nbits_b > bit_indexb) {
+            CX_CHECK(cx_bn_tst_bit(bn_tempb, bit_indexb, &bit_set));
+            if (bit_set) {
+                CX_CHECK(cx_bn_copy(bn_tempx, bn_r));
+                CX_CHECK(cx_bn_xor(bn_r, bn_tempa, bn_tempx));
+            }
+
+            CX_CHECK(cx_bn_shl(bn_tempa, 1));
+            CX_CHECK(cx_bn_tst_bit(bn_tempa, degree, &bit_set));
+
+            if (bit_set) {
+                CX_CHECK(cx_bn_copy(bn_tempx, bn_tempa));
+                CX_CHECK(cx_bn_xor(bn_tempa, bn_n, bn_tempx));
+            }
+
+            bit_indexb++;
         }
-
-        CX_CHECK(cx_bn_shl(bn_x, 1));
-        CX_CHECK(cx_bn_tst_bit(bn_x, degree, &bit_set));
-
-        if (bit_set) {
-            CX_CHECK(cx_bn_copy(bn_temp, bn_x));
-            CX_CHECK(cx_bn_xor(bn_x, bn_n, bn_temp));
-        }
-
-        CX_CHECK(cx_bn_shr(bn_y, 1));
-
-        // Maybe change cx_bn_cmp_u32 to cx_bn_cnt_bits
-        CX_CHECK(cx_bn_cmp_u32(bn_x, (uint32_t) 0, &cmp_x));
-        CX_CHECK(cx_bn_cmp_u32(bn_y, (uint32_t) 0, &cmp_y));
     }
 
     // Clean up
-    CX_CHECK(cx_bn_destroy(&bn_x));
-    CX_CHECK(cx_bn_destroy(&bn_y));
-    CX_CHECK(cx_bn_destroy(&bn_temp));
+    CX_CHECK(cx_bn_destroy(&bn_tempa));
+    CX_CHECK(cx_bn_destroy(&bn_tempb));
+    CX_CHECK(cx_bn_destroy(&bn_tempx));
 
 end:
     return error;
@@ -218,10 +197,9 @@ cx_err_t interpolate(uint8_t n,
 
         for (uint8_t j = 0; j < yl; j++) {
             CX_CHECK(cx_bn_set_u32(bn_tempa, (uint32_t) yij[i][j]));
-            CX_CHECK(cx_bn_set_u32(bn_result, (uint32_t) result[j]));
+            CX_CHECK(cx_bn_set_u32(bn_tempb, (uint32_t) result[j]));
 
             CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_lagrange, bn_tempa, bn_n, bn_r2));
-            CX_CHECK(cx_bn_copy(bn_tempb, bn_result));
             CX_CHECK(cx_bn_xor(bn_result, bn_tempa, bn_tempb));
             CX_CHECK(cx_bn_get_u32(bn_result, &result_u32));
             result[j] = (uint8_t) result_u32;

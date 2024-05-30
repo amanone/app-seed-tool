@@ -11,6 +11,7 @@
 // Defines
 //-----------------------------------------------------------------------------
 // Those defines can be found in the SDK, in cx_errors.h file:
+#ifndef CX_CHECK
 #define CX_CHECK(call)                                                         \
   do {                                                                         \
     error = call;                                                              \
@@ -18,6 +19,7 @@
       goto end;                                                                \
     }                                                                          \
   } while (0)
+#endif
 
 #define CX_CHECK_IGNORE_CARRY(call)                                            \
   do {                                                                         \
