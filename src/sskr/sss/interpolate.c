@@ -23,7 +23,6 @@
 // Minimal required bytes for BN storing a GF(256) value
 #define GF2_8_MPI_BYTES 16
 
-#if defined(TARGET_NANOS) && !defined API_LEVEL
 /**
  * @brief Performs a multiplication over GF(2^n).
  *
@@ -45,11 +44,11 @@
  *                  - CX_INVALID_PARAMETER
  *                  - CX_MEMORY_FULL
  */
-cx_err_t cx_bn_gf2_n_mul(cx_bn_t bn_r,
-                         const cx_bn_t bn_a,
-                         const cx_bn_t bn_b,
-                         const cx_bn_t bn_n,
-                         const cx_bn_t bn_h __attribute__((unused))) {
+cx_err_t bn_gf2_n_mul(cx_bn_t bn_r,
+                      const cx_bn_t bn_a,
+                      const cx_bn_t bn_b,
+                      const cx_bn_t bn_n,
+                      const cx_bn_t bn_h __attribute__((unused))) {
     cx_err_t error = CX_OK;
     uint32_t degree, nbits_a, nbits_b;
 
@@ -110,7 +109,6 @@ cx_err_t cx_bn_gf2_n_mul(cx_bn_t bn_r,
 end:
     return error;
 }
-#endif
 
 cx_err_t interpolate(uint8_t n,
                      const uint8_t* xi,
@@ -167,31 +165,31 @@ cx_err_t interpolate(uint8_t n,
                 // Calculate the inverse of the denominator
                 // In GF(2^8) the inverse of x = x^254
                 // bn_result = bn_denominator^2
-                CX_CHECK(cx_bn_gf2_n_mul(bn_result, bn_denominator, bn_denominator, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_result, bn_denominator, bn_denominator, bn_n, bn_r2));
                 // bn_result = bn_denominator^4
-                CX_CHECK(cx_bn_gf2_n_mul(bn_result, bn_result, bn_result, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_result, bn_result, bn_result, bn_n, bn_r2));
                 // bn_tempa = bn_denominator^8
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_result, bn_result, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_result, bn_result, bn_n, bn_r2));
                 // bn_tempb = bn_denominator^9
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempb, bn_tempa, bn_denominator, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempb, bn_tempa, bn_denominator, bn_n, bn_r2));
                 // bn_tempa = bn_denominator^16
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempa, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempa, bn_n, bn_r2));
                 // bn_tempa = bn_denominator^25
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempb, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempb, bn_n, bn_r2));
                 // bn_tempa = bn_denominator^50
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempa, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempa, bn_n, bn_r2));
                 // bn_tempb = bn_denominator^100
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempb, bn_tempa, bn_tempa, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempb, bn_tempa, bn_tempa, bn_n, bn_r2));
                 // bn_tempb = bn_denominator^200
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempb, bn_tempb, bn_tempb, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempb, bn_tempb, bn_tempb, bn_n, bn_r2));
                 // bn_tempa = bn_denominator^250
-                CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempb, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_tempa, bn_tempb, bn_n, bn_r2));
                 // bn_denominator = bn_denominator^254
-                CX_CHECK(cx_bn_gf2_n_mul(bn_denominator, bn_result, bn_tempa, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_denominator, bn_result, bn_tempa, bn_n, bn_r2));
 
                 // Calculate the lagrange basis coefficient
-                CX_CHECK(cx_bn_gf2_n_mul(bn_lagrange, bn_numerator, bn_lagrange, bn_n, bn_r2));
-                CX_CHECK(cx_bn_gf2_n_mul(bn_lagrange, bn_denominator, bn_lagrange, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_lagrange, bn_numerator, bn_lagrange, bn_n, bn_r2));
+                CX_CHECK(bn_gf2_n_mul(bn_lagrange, bn_denominator, bn_lagrange, bn_n, bn_r2));
             }
         }
 
@@ -199,7 +197,7 @@ cx_err_t interpolate(uint8_t n,
             CX_CHECK(cx_bn_set_u32(bn_tempa, (uint32_t) yij[i][j]));
             CX_CHECK(cx_bn_set_u32(bn_tempb, (uint32_t) result[j]));
 
-            CX_CHECK(cx_bn_gf2_n_mul(bn_tempa, bn_lagrange, bn_tempa, bn_n, bn_r2));
+            CX_CHECK(bn_gf2_n_mul(bn_tempa, bn_lagrange, bn_tempa, bn_n, bn_r2));
             CX_CHECK(cx_bn_xor(bn_result, bn_tempa, bn_tempb));
             CX_CHECK(cx_bn_get_u32(bn_result, &result_u32));
             result[j] = (uint8_t) result_u32;
