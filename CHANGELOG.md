@@ -5,16 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.7.4-rc.2] - 2024-06-03
+## [1.7.4] - 2024-06-17
 
 ### Fixed
-- Use `cx_bn_gf2_n_mul()` syscall instead of internal `bn_gf2_n_mul()` on LNSP and LNX
 - Ensure result does not overlap with operands in calls to `cx_bn_gf2_n_mul()`
-
-## [1.7.4-rc.1] - 2024-05-31
-
-### Fixed
-- Use internal `bn_gf2_n_mul()` instead of `cx_bn_gf2_n_mul()` syscall on all devices
+- Give a warning if a user chooses 1-of-m shares when m > 1
 
 ## [1.7.3] - 2024-05-29
 
