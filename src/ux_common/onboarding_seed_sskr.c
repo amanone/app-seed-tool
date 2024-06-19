@@ -199,10 +199,10 @@ unsigned int bolos_ux_bip39_to_sskr_convert(unsigned char *bip39_words_buffer,
                                               share_count_expected);
         memzero(seed_buffer, sizeof(seed_buffer));
         if (*share_count > 0) {
-            // CBOR Tag #309 is D9 0135
+            // CBOR Tag #6.40309 is D9 9D75
             // CBOR Major type 2 is 0x40
             // (see https://www.rfc-editor.org/rfc/rfc8949#name-major-types)
-            uint8_t cbor[] = {0xD9, 0x01, 0x35, 0x40, 0x00};
+            uint8_t cbor[] = {0xD9, 0x9D, 0x75, 0x40, 0x00};
             size_t cbor_len = sizeof(cbor);
             if (share_len < 24) {
                 cbor[3] |= (share_len & 0x1F);
@@ -258,7 +258,7 @@ unsigned int bolos_ux_bip39_to_sskr_convert(unsigned char *bip39_words_buffer,
 unsigned int bolos_ux_sskr_hex_check(unsigned char *mnemonic_hex,
                                      unsigned int mnemonic_length,
                                      unsigned int sskr_shares_count) {
-    uint8_t cbor[] = {0xD9, 0x01, 0x35};  // CBOR tag
+    uint8_t cbor[] = {0xD9, 0x9D, 0x75};  // CBOR Tag #6.40309 is D9 9D75
     uint32_t checksum = 0;
     uint8_t checksum_len = sizeof(checksum);
 

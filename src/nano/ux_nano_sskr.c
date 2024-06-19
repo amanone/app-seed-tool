@@ -133,8 +133,7 @@ void generate_sskr(void) {
                                    &G_bolos_ux_context.sskr_words_buffer_length);
 
     if (G_bolos_ux_context.sskr_share_count > 0) {
-        PRINTF("SSKR share_count from generate_sskr(): %d\n",
-               G_bolos_ux_context.sskr_share_count);
+        PRINTF("SSKR share_count from generate_sskr(): %d\n", G_bolos_ux_context.sskr_share_count);
         for (uint8_t share = 0; share < G_bolos_ux_context.sskr_share_count; share++) {
             PRINTF("SSKR share %d:\n", share + 1);
             PRINTF(
@@ -150,22 +149,25 @@ void generate_sskr(void) {
 }
 
 UX_STEP_NOCB(ux_threshold_warn_step_1,
-              pnn,
-              {
-                  &C_icon_warning,
-                  "1-of-m shares",
-                  "where m > 1",
-              });
+             pnn,
+             {
+                 &C_icon_warning,
+                 "1-of-m shares",
+                 "where m > 1",
+             });
 
 UX_STEP_NOCB(ux_threshold_warn_step_2,
-              pbb,
-              {
-                  &C_icon_warning,
-                  "Not",
-                  "Supported",
-              });
+             pbb,
+             {
+                 &C_icon_warning,
+                 "Not",
+                 "Supported",
+             });
 
-UX_FLOW(ux_threshold_warn_flow, &ux_threshold_warn_step_1, &ux_threshold_warn_step_2, &step_sskr_clean_exit);
+UX_FLOW(ux_threshold_warn_flow,
+        &ux_threshold_warn_step_1,
+        &ux_threshold_warn_step_2,
+        &step_sskr_clean_exit);
 
 const char* const sskr_descriptor_values[] = {"1",
                                               "2",
@@ -199,7 +201,7 @@ void sskr_threshold_selector(unsigned int idx) {
 
     if (G_bolos_ux_context.sskr_group_descriptor[0][0] == 1 &&
         G_bolos_ux_context.sskr_group_descriptor[0][1] > 1) {
-        ux_flow_init(0, ux_threshold_warn_flow, NULL);;
+        ux_flow_init(0, ux_threshold_warn_flow, NULL);
     } else {
 #if defined(TARGET_NANOS)
         // Display processing warning to user
