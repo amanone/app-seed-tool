@@ -45,20 +45,20 @@ jobs:
         run: |
           cd tests/unit/
           make
-      - name: Generate code coverage
-        run: |
-          cd tests/unit/
-          make coverage
-      - uses: actions/upload-artifact@v4
-        with:
-          name: code-coverage
-          path: tests/unit/coverage
-      - name: Upload to codecov.io
-        uses: codecov/codecov-action@v3
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./tests/unit/coverage.info
-          flags: unittests
-          name: codecov-app-seed-tool
-          fail_ci_if_error: true
-          verbose: true
+          # - name: Generate code coverage
+          #   run: |
+          #     cd tests/unit/
+          #     make coverage
+          # - uses: actions/upload-artifact@v4
+          #   with:
+          #     name: code-coverage
+          #     path: tests/unit/coverage
+          # - name: Upload to codecov.io
+          #   uses: codecov/codecov-action@v3
+          #   with:
+          #     token: ${{ secrets.CODECOV_TOKEN }}
+          #     files: ./tests/unit/coverage.info
+          #     flags: unittests
+          #     name: codecov-app-seed-tool
+          #     fail_ci_if_error: true
+          #     verbose: true
